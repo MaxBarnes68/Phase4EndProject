@@ -1,0 +1,43 @@
+pipeline { 
+    agent any 
+    environment { 
+            GIT_URL = " https://github.com/shalini06mittal/MPPhasesTraining.git" 
+            IMAGE_NAME = "springjenkins" 
+             
+        } 
+    stages { 
+        stage('GetFromGithub') { 
+            steps { 
+                echo "get git url"
+                git branch: 'docker', url: GIT_URL 
+            } 
+        } 
+        stage('Ensure Maven is runnable') { 
+            steps {                
+                sh 'chmod a+x springbootdocker/mvnw'                
+            } 
+        } 
+        
+         
+        stage('Maven build') { 
+            steps {                 
+                sh 'mvn -f springbootdocker/ clean package -DskipTests'                 
+            } 
+        } 
+         
+        stage('Docker image build') { 
+            steps {     
+                sh 'docker image build -t ${IMAGE_NAME} springbootdocker/.'  
+            } 
+        } 
+        
+        stage('Docker container build') { 
+            steps {     
+               echo "will create container"     
+               sh 'docker run -d -p8100:8080  ${IMAGE_NAME}'
+            } 
+        }
+       
+    } 
+     
+}
